@@ -6,6 +6,7 @@ from discord import app_commands
 import os, json
 from datetime import datetime
 import traceback
+import requests
 import pytz
 tz_NP = pytz.timezone('Asia/Kathmandu')
 
@@ -27,8 +28,12 @@ def read_json(fname):
 
 
 def write_json(fname, data):
-    with open(basepath+'/data/'+fname+'.json', 'w') as f:
+    file=basepath+'/data/'+fname+'.json'
+    with open(file, 'w') as f:
         json.dump(data, f, indent=4)
+    f=open(file,'rb')
+    r=requests.post(os.getenv("data_backup_webhook"), json=data, files={"file": f})
+    f.close()
 
 
 @bot.event
@@ -36,7 +41,7 @@ async def on_error(event, *args, **kwargs):
     embed = discord.Embed(title=':x: Role.py - Error', colour=0xe74c3c)
     embed.add_field(name='Event', value=event)
     embed.description = '```py\n%s\n```' % traceback.format_exc()
-    embed.timestamp = datetime.datetime.utcnow()
+    embed.timestamp = datetime.now()
     bot.AppInfo = await bot.application_info()
     await bot.AppInfo.owner.send(embed=embed)
 
