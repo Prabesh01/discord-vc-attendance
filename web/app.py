@@ -1,7 +1,8 @@
-from flask import Flask, render_template, jsonify, request
+from flask import Flask, render_template, jsonify, request, redirect
 from functools import wraps
 import json
 import os
+import requests
 
 app = Flask(__name__, static_url_path='/static')
 
@@ -86,6 +87,18 @@ def admin_post():
         json.dump(attendance_data, f, indent=4)
     
     return "", 200
+
+
+@app.get('/backup')
+@requires_auth
+def backup():
+    for file in ['user', 'attendance']:
+        file_path=data_dir+'/'+file+'.json'
+        f=open(file_path,'rb')
+        requests.post(os.getenv("data_backup_webhook"), files={"file": f})
+        f.close()
+
+    return redirect('/admin')
 
 if __name__ == '__main__':
     app.run(debug=True)
