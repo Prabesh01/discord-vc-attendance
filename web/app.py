@@ -8,14 +8,17 @@ app = Flask(__name__, static_url_path='/static')
 basepath=os.path.dirname(os.path.abspath(__file__))
 data_dir = os.path.dirname(basepath) +'/data'
 
-with open(data_dir+'/user.json') as f:
-    users_data = json.load(f)
 
-with open(data_dir+'/attendance.json') as f:
-    attendance_data = json.load(f)
+def fetch_data():
+    with open(data_dir+'/user.json') as f:
+        users_data = json.load(f)
 
+    with open(data_dir+'/attendance.json') as f:
+        attendance_data = json.load(f)
+    return users_data, attendance_data
 
 def get_attendance_data():
+    users_data, attendance_data=fetch_data()
     user_attendace={}
     attendance_days=[]
     for user in users_data:
