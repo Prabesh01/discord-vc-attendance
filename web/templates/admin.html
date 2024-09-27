@@ -32,7 +32,7 @@
                     </div>
                 </td>
                 {% for day in user_attendace[student]['attendance'] %}
-                <td class="attend-col"><input type="checkbox" {% if day %} checked="" {% endif %} disabled></td>
+                <td class="attend-col"><input type="checkbox" {% if day %} checked="" {% endif %}></td>
                 {% endfor %}
             </tr>
             {% endfor %}
@@ -51,5 +51,40 @@ thElements.forEach(function (th) {
 
     th.textContent = formattedDate;
 });    
+</script>
+<script>
+    document.querySelectorAll('input[type="checkbox"]').forEach(function (checkbox) {
+        checkbox.addEventListener('change', function (event) {
+            const uid = checkbox.closest('tr').querySelector('.user-detail').id;
+
+            const isChecked = checkbox.checked;
+
+            let cell=checkbox.closest('td');
+            let cellIndex = Array.from(cell.parentNode.children).indexOf(cell);
+            let correspondingTh = document.querySelector('table thead th:nth-child(' + (cellIndex + 1) + ')');
+            let date = correspondingTh.querySelector('div').getAttribute('data-date');
+
+            const data = {
+                userId: uid,
+                date: date,
+                status: isChecked
+            };
+            
+            
+            fetch('', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                checkbox.checked=!isChecked;
+            });
+            
+            
+        });
+    });            
 </script>
 </html>
