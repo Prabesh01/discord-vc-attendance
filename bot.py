@@ -5,7 +5,6 @@ from discord import app_commands
 import os, json
 from datetime import datetime
 import traceback
-import requests
 import pytz
 tz_NP = pytz.timezone('Asia/Kathmandu')
 
@@ -30,9 +29,6 @@ def write_json(fname, data):
     file=basepath+'/data/'+fname+'.json'
     with open(file, 'w') as f:
         json.dump(data, f, indent=4)
-    f=open(file,'rb')
-    r=requests.post(os.getenv("data_backup_webhook"), json=data, files={"file": f})
-    f.close()
 
 
 @bot.event
