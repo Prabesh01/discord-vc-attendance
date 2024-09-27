@@ -26,7 +26,7 @@
             {% for student in user_attendace %}
             <tr class="student">
                 <td class="name-col">{{ user_attendace[student]['username'] }}
-                    <div id="{{ student }}" class="user-detail">
+                    <div id="{{ student }}" class="user-detail hidden">
                         London Met. ID: {{ user_attendace[student]['lid'] }}<br>
                         Name: {{ user_attendace[student]['name'] }}<br>
                         (Year: {{ user_attendace[student]['year'] }} Section: {{ user_attendace[student]['section'] }})
@@ -88,4 +88,21 @@ thElements.forEach(function (th) {
         });
     });            
 </script>
+<script>
+    document.querySelectorAll('.name-col').forEach(nameCol => {
+        nameCol.addEventListener('click', function(event) {
+            nameCol.getElementsByTagName('div')[0].classList.toggle('hidden');
+            event.stopPropagation();
+        });
+    });
+    
+    document.addEventListener('contextmenu', function(event) {
+        event.preventDefault();
+        var userDetails = document.querySelectorAll('.user-detail');
+        userDetails.forEach(function(detailDiv) {
+            detailDiv.classList.toggle('hidden');
+        });
+    });    
+</script>
+
 </html>

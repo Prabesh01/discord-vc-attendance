@@ -31,4 +31,8 @@ td.total-col {
 
 .name-col {
     text-align: left;
+    cursor: pointer;
+}
+.hidden {
+    display: none;
 }
