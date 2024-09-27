@@ -79,7 +79,7 @@ async def on_voice_state_update(member, before, after):
         if not member.id in attendance[date_now]:
             attendance[date_now].append(member.id)
             write_json('attendance', attendance)
-    await member.move_to(None)
+        await member.move_to(None)
 
 
 @bot.event
