@@ -78,7 +78,7 @@ async def on_voice_state_update(member, before, after):
         date_now=now.strftime('%Y-%m-%d')
         if date_now not in attendance:
             attendance[date_now]=[]
-        if not member.id in attendance[date_now]:
+        if not str(member.id) in attendance[date_now]:
             attendance[date_now].append(str(member.id))
             write_json('attendance', attendance)
         await member.move_to(None)
