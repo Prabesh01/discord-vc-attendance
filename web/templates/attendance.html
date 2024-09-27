@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HOH Attendance</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
+</head>
+<body>
+    <h1>HOH Attendance</h1>
+
+    <table>
+        <thead>
+            <tr>
+                <th class="name-col">Attendee</th>
+                {% for day in attendance_days %}
+                <th>{{ day }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for student in user_attendace %}
+            <tr class="student">
+                <td class="name-col">{{ user_attendace[student]['username'] }}
+                    <div class="user-detail">
+                        London Met. ID: {{ user_attendace[student]['lid'] }}<br>
+                        Name: {{ user_attendace[student]['name'] }}<br>
+                        (Year: {{ user_attendace[student]['year'] }} Section: {{ user_attendace[student]['section'] }})
+                    </div>
+                </td>
+                {% for day in user_attendace[student]['attendance'] %}
+                <td class="attend-col"><input type="checkbox" {% if day %} checked="" {% endif %} readonly></td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
