@@ -32,8 +32,6 @@ def get_attendance_data():
 @app.route('/')
 def display_attendance():
     user_attendace, attendance_days=get_attendance_data()
-    print(user_attendace)
-    print(attendance_days)
     return render_template('attendance.html',user_attendace=user_attendace, attendance_days=attendance_days)
     
 
