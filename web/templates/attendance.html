@@ -4,71 +4,148 @@ https://codepen.io/jboludae/pen/NNJwOv
 -->
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HOH Attendance</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
-</head>
-<body>
-    <h1>HOH Attendance</h1>
 
-    <table>
-        <thead>
-            <tr>
-                <th class="name-col">Attendee</th>
-                {% for val in attendance_days %}
-                    {% for key, value in val.items() %}
-                        <th><div data-date="{{ key }}"></div>({{ value }})</th>
-                    {% endfor %}
-                {% endfor %}
-            </tr>
-        </thead>
-        <tbody>
-            {% for student in user_attendace %}
-            <tr class="student">
-                <td class="name-col">{{ user_attendace[student]['username'] }}
-                    <div id="{{ student }}" class="user-detail hidden">
-                        London Met. ID: {{ user_attendace[student]['lid'] }}<br>
-                        Name: {{ user_attendace[student]['name'] }}<br>
-                        (Year: {{ user_attendace[student]['year'] }} Section: {{ user_attendace[student]['section'] }})
-                    </div>
-                </td>
-                {% for day in user_attendace[student]['attendance'] %}
-                <td class="attend-col"><input type="checkbox" {% if day %} checked="" {% endif %} disabled></td>
-                {% endfor %}
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HOH Attendance</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
+</head>
+<style>
+  /* STYLE D */
+  /* https://codepen.io/hqdrone/pen/vYGJXZN */
+  .checkbox.style-d {
+    display: inline-block;
+    position: relative;
+    padding-left: 30px;
+    /* cursor: pointer; */
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+
+  .checkbox.style-d input {
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+  }
+
+  .checkbox.style-d input:checked~.checkbox__checkmark {
+    background-color: #f7cb15;
+  }
+
+  .checkbox.style-d input:checked~.checkbox__checkmark:after {
+    opacity: 1;
+  }
+
+  .checkbox.style-d:hover input~.checkbox__checkmark {
+    background-color: #eee;
+  }
+
+  .checkbox.style-d:hover input:checked~.checkbox__checkmark {
+    background-color: #f7cb15;
+  }
+
+  .checkbox.style-d:hover input~.checkbox__body {
+    color: #f7cb15;
+  }
+
+  .checkbox.style-d .checkbox__checkmark {
+    position: absolute;
+    top: 1px;
+    left: 0;
+    height: 22px;
+    width: 22px;
+    background-color: #eee;
+    transition: background-color 0.25s ease;
+    border-radius: 11px;
+  }
+
+  .checkbox.style-d .checkbox__checkmark:after {
+    content: "";
+    position: absolute;
+    left: 9px;
+    top: 5px;
+    width: 5px;
+    height: 10px;
+    border: solid #333;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+    opacity: 0;
+    transition: opacity 0.25s ease;
+  }
+</style>
+
+<body>
+  <h1>HOH Attendance</h1>
+
+  <table>
+    <thead>
+      <tr>
+        <th class="name-col">Attendees ({{ user_attendace | length }})</th>
+        {% for val in attendance_days %}
+        {% for key, value in val.items() %}
+        <th>
+          <div data-date="{{ key }}"></div>({{ value }})
+        </th>
+        {% endfor %}
+        {% endfor %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for student in user_attendace %}
+      <tr class="student">
+        <td class="name-col">{{ user_attendace[student]['username'] }}
+          <div id="{{ student }}" class="user-detail hidden">
+            London Met. ID: {{ user_attendace[student]['lid'] }}<br>
+            Name: {{ user_attendace[student]['name'] }}<br>
+            (Year: {{ user_attendace[student]['year'] }} Section: {{ user_attendace[student]['section'] }})
+          </div>
+        </td>
+        {% for day in user_attendace[student]['attendance'] %}
+        <!-- <td class="attend-col"><input type="checkbox" {% if day %} checked="" {% endif %} disabled></td> -->
+        <td class="attend-col">
+          <label class="checkbox style-d">
+            <input type="checkbox" {% if day %} checked="" {% endif %} disabled />
+            <div class="checkbox__checkmark"></div>
+          </label>
+        </td>
+        {% endfor %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
 </body>
 <script>
-    const thElements = document.querySelectorAll('div[data-date]');
+  const thElements = document.querySelectorAll('div[data-date]');
 
-thElements.forEach(function (th) {
+  thElements.forEach(function (th) {
     const dateStr = th.getAttribute('data-date');
-    
+
     const date = new Date(dateStr);
 
     const formattedDate = date.toLocaleString('default', { month: 'short', day: 'numeric' });
 
     th.textContent = formattedDate;
-});    
+  });    
 </script>
 <script>
-    document.querySelectorAll('.name-col').forEach(nameCol => {
-        nameCol.addEventListener('click', function(event) {
-            nameCol.getElementsByTagName('div')[0].classList.toggle('hidden');
-            document.querySelectorAll('.name-col').forEach(unhiddenCol => {
-                if (unhiddenCol !== nameCol) {
-                    try{
-                    unhiddenCol.getElementsByTagName('div')[0].classList.add('hidden');
-                    }catch(err){}
-                }
-            });
-            event.stopPropagation();
-        });
+  document.querySelectorAll('.name-col').forEach(nameCol => {
+    nameCol.addEventListener('click', function (event) {
+      nameCol.getElementsByTagName('div')[0].classList.toggle('hidden');
+      document.querySelectorAll('.name-col').forEach(unhiddenCol => {
+        if (unhiddenCol !== nameCol) {
+          try {
+            unhiddenCol.getElementsByTagName('div')[0].classList.add('hidden');
+          } catch (err) { }
+        }
+      });
+      event.stopPropagation();
     });
+  });
 </script>
+
 </html>

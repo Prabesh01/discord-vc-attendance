@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,21 +8,86 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
 </head>
+<style>
+    td.attend-col {
+        position: relative;
+        padding: 0;
+        cursor: default;
+    }
+
+    .checkbox.style-g {
+        display: block;
+        height: 100%;
+        width: 100%;
+        cursor: crosshair;
+        position: relative;
+        padding-right: 0;
+    }
+
+    .checkbox.style-g input {
+        opacity: 0;
+        cursor: crosshair;
+        height: 100%;
+        width: 100%;
+    }
+
+    .checkbox.style-g .checkbox__checkmark {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        height: 22px;
+        width: 22px;
+        background-color: transparent;
+        border-radius: 4px;
+        transition: background-color 0.25s ease;
+    }
+
+    .checkbox.style-g input:checked~.checkbox__checkmark {
+        background-color: #fff;
+    }
+
+    .checkbox.style-g input:checked~.checkbox__checkmark:after {
+        opacity: 1;
+        left: 8px;
+    }
+
+    .checkbox.style-g input:not(:checked)~.checkbox__checkmark {
+        background-color: transparent;
+    }
+
+    .checkbox.style-g .checkbox__checkmark:after {
+        content: "";
+        position: absolute;
+        left: -20px;
+        top: -8px;
+        width: 15px;
+        height: 25px;
+        border: solid #f7cb15;
+        border-width: 0 4px 4px 0;
+        transform: rotate(45deg);
+        opacity: 0;
+        transition: opacity 0.25s ease, left 0.25s ease;
+    }
+</style>
 
 <body>
-    <h1>HOH Attendance</h1>		
-    <code>Total Days: {{ attendance_days | length }}</code>
-		<a class="button" style="text-decoration: none; position:absolute; top: 10px; right:10px;" href="/backup">⬇️ Download Data</a>
+    <h1>HOH Attendance</h1>
+    <a class="button" style="text-decoration: none; position:absolute; top: 10px; right:10px;" href="/backup">⬇️
+        Download Data</a>
     <table>
         <thead>
             <tr>
-                <th class="name-col">Attendee</th>
+                <th class="name-col">Attendees ({{ user_attendace | length }})</th>
                 {% for val in attendance_days %}
-                    {% for key, value in val.items() %}
-                        <th><div data-date="{{ key }}"></div>({{ value }})</th>
-                    {% endfor %}
+                {% for key, value in val.items() %}
+                <th>
+                    <div data-date="{{ key }}"></div>({{ value }})
+                </th>
                 {% endfor %}
-                <th class="missed-col">Missed</th>
+                {% endfor %}
+                <th class="missed-col">Missed<div>(Out of {{ attendance_days | length }})</div>
+                </th>
             </tr>
         </thead>
         <tbody>
@@ -35,7 +101,13 @@
                     </div>
                 </td>
                 {% for day in user_attendace[student]['attendance'] %}
-                <td class="attend-col"><input type="checkbox" {% if day %} checked="" {% endif %}></td>
+                <!-- <td class="attend-col"><input type="checkbox" {% if day %} checked="" {% endif %}></td> -->
+                <td class="attend-col">
+                    <label class="checkbox style-g">
+                        <input type="checkbox" {% if day %} checked="" {% endif %} />
+                        <div class="checkbox__checkmark"></div>
+                    </label>
+                </td>
                 {% endfor %}
             </tr>
             {% endfor %}
@@ -45,15 +117,15 @@
 <script>
     const thElements = document.querySelectorAll('div[data-date]');
 
-thElements.forEach(function (th) {
-    const dateStr = th.getAttribute('data-date');
-    
-    const date = new Date(dateStr);
+    thElements.forEach(function (th) {
+        const dateStr = th.getAttribute('data-date');
 
-    const formattedDate = date.toLocaleString('default', { month: 'short', day: 'numeric' });
+        const date = new Date(dateStr);
 
-    th.textContent = formattedDate;
-});    
+        const formattedDate = date.toLocaleString('default', { month: 'short', day: 'numeric' });
+
+        th.textContent = formattedDate;
+    });    
 </script>
 <script>
     document.querySelectorAll('input[type="checkbox"]').forEach(function (checkbox) {
@@ -62,7 +134,7 @@ thElements.forEach(function (th) {
 
             const isChecked = checkbox.checked;
 
-            let cell=checkbox.closest('td');
+            let cell = checkbox.closest('td');
             let cellIndex = Array.from(cell.parentNode.children).indexOf(cell);
             let correspondingTh = document.querySelector('table thead th:nth-child(' + (cellIndex + 1) + ')');
             let date = correspondingTh.querySelector('div').getAttribute('data-date');
@@ -72,8 +144,8 @@ thElements.forEach(function (th) {
                 date: date,
                 status: isChecked
             };
-            
-            
+
+
             fetch('', {
                 method: 'POST',
                 headers: {
@@ -81,50 +153,51 @@ thElements.forEach(function (th) {
                 },
                 body: JSON.stringify(data)
             })
-            .catch(error => {
-                console.error('Error:', error);
-                checkbox.checked=!isChecked;
-            });
-            
-            
+                .catch(error => {
+                    console.error('Error:', error);
+                    checkbox.checked = !isChecked;
+                });
+
+
         });
     });            
 </script>
 <script>
     document.querySelectorAll('.name-col').forEach(nameCol => {
-        nameCol.addEventListener('click', function(event) {
+        nameCol.addEventListener('click', function (event) {
             nameCol.getElementsByTagName('div')[0].classList.toggle('hidden');
             event.stopPropagation();
         });
     });
-    
-    document.addEventListener('contextmenu', function(event) {
+
+    document.addEventListener('contextmenu', function (event) {
         event.preventDefault();
         var userDetails = document.querySelectorAll('.user-detail');
-        userDetails.forEach(function(detailDiv) {
+        userDetails.forEach(function (detailDiv) {
             detailDiv.classList.toggle('hidden');
         });
     });    
 </script>
 <script>
-const table = document.querySelector('table tbody');
-const students = table.querySelectorAll('tr.student');
+    const table = document.querySelector('table tbody');
+    const students = table.querySelectorAll('tr.student');
 
-students.forEach((student) => {
-  const checkboxes = student.querySelectorAll('input[type="checkbox"]');
-  
-  let totalAbsent = 0;
-  checkboxes.forEach((checkbox) => {
-    if (!checkbox.checked) {
-        totalAbsent++;
-    }
-  });
-  
-  const totalCell = document.createElement('td');
-  totalCell.classList.add('missed-col');
-  totalCell.textContent = totalAbsent;
-  student.appendChild(totalCell);
-});
+    students.forEach((student) => {
+        const checkboxes = student.querySelectorAll('input[type="checkbox"]');
+
+        let totalAbsent = 0;
+        checkboxes.forEach((checkbox) => {
+            if (!checkbox.checked) {
+                totalAbsent++;
+            }
+        });
+
+        const totalCell = document.createElement('td');
+        totalCell.classList.add('missed-col');
+        totalCell.textContent = totalAbsent;
+        student.appendChild(totalCell);
+    });
 
 </script>
+
 </html>
