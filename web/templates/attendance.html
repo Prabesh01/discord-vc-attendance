@@ -56,6 +56,13 @@ thElements.forEach(function (th) {
     document.querySelectorAll('.name-col').forEach(nameCol => {
         nameCol.addEventListener('click', function(event) {
             nameCol.getElementsByTagName('div')[0].classList.toggle('hidden');
+            document.querySelectorAll('.name-col').forEach(unhiddenCol => {
+                if (unhiddenCol !== nameCol) {
+                    try{
+                    unhiddenCol.getElementsByTagName('div')[0].classList.add('hidden');
+                    }catch(err){}
+                }
+            });
             event.stopPropagation();
         });
     });
