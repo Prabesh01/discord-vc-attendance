@@ -43,19 +43,19 @@ async def on_error(event, *args, **kwargs):
 
 @app_commands.command(name="enroll", description="Provude your details.")
 @app_commands.describe(london_met_id="Your Londeon Met ID", name="Your name", section="Your Section Number")
-@app_commands.choices(years=[
+@app_commands.choices(year=[
     app_commands.Choice(name="Year 1 Autumn", value="1 - Autumn"),
     app_commands.Choice(name="Year 1 Spring", value="1 - Spring"),
     app_commands.Choice(name="Year 2", value="2"),
     app_commands.Choice(name="Year 3", value="3"),
     ])
-async def enroll(interaction: discord.Interaction, london_met_id: str, name: str=None, years: app_commands.Choice[str]= None, section: int= None):
+async def enroll(interaction: discord.Interaction, london_met_id: int, name: str=None, year: app_commands.Choice[str]= None, section: int= None):
     user_data=read_json('user')
     data = {
         "username": interaction.user.name,
         "lid": london_met_id,
         "name": name,
-        "year": years.value if years else None,
+        "year": year.value if year else None,
         "section": section
     }
     if str(interaction.user.id) in user_data:
