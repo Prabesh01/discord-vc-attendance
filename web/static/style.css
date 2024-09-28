@@ -19,11 +19,11 @@ input {
 }
 
 /* Column types */
-th.total-col {
+th.missed-col {
     background-color: #f00;
 }
 
-td.total-col {
+td.missed-col {
     background-color: #ffecec;
     color: #f00;
     text-align: center;
