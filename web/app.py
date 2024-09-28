@@ -40,6 +40,11 @@ def get_attendance_data():
 
 @app.route('/')
 def home():
+    return render_template('index.html')
+
+
+@app.route('/attendance')
+def get_attendance():
     user_attendace, attendance_days=get_attendance_data()
     return render_template('attendance.html',user_attendace=user_attendace, attendance_days=attendance_days)
 
