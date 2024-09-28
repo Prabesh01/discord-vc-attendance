@@ -65,10 +65,10 @@ async def enroll(interaction: discord.Interaction, london_met_id: int, name: str
 @bot.event
 async def on_voice_state_update(member, before, after):
     now=datetime.now(tz_NP)
-    if now.weekday() != 3 or now.hour != 15: 
-        await member.move_to(None)
-        return
-    if after.channel and after.channel.id==1289057002311385118:
+    #if now.weekday() != 3 or now.hour != 15: 
+    #    await member.move_to(None)
+    #    return
+    if after.channel and after.channel.id==1289266957702529118: #1289057002311385118:
         attendance=read_json('attendance')
         date_now=now.strftime('%Y-%m-%d')
         if date_now not in attendance:
