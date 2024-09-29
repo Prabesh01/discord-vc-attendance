@@ -41,22 +41,14 @@ async def on_error(event, *args, **kwargs):
     await bot.AppInfo.owner.send(embed=embed)
 
 
-@app_commands.command(name="enroll", description="Provude your details.")
-@app_commands.describe(london_met_id="Your Londeon Met ID", name="Your name", section="Your Section Number")
-@app_commands.choices(year=[
-    app_commands.Choice(name="Year 1 Autumn", value="1 - Autumn"),
-    app_commands.Choice(name="Year 1 Spring", value="1 - Spring"),
-    app_commands.Choice(name="Year 2", value="2"),
-    app_commands.Choice(name="Year 3", value="3"),
-    ])
-async def enroll(interaction: discord.Interaction, london_met_id: int, name: str=None, year: app_commands.Choice[str]= None, section: int= None):
+@app_commands.command(name="enroll", description="Provide your details.")
+@app_commands.describe(london_met_id="Your Londeon Met ID", name="Your name")
+async def enroll(interaction: discord.Interaction, london_met_id: int, name: str):
     user_data=read_json('user')
     data = {
         "username": interaction.user.name,
         "lid": london_met_id,
         "name": name,
-        "year": year.value if year else None,
-        "section": section
     }
     if str(interaction.user.id) in user_data:
         txt="Enrollment Updated Sucessfully!"
@@ -88,6 +80,7 @@ async def on_voice_state_update(member, before, after):
         if not mem_id in user_data:
             user_data[mem_id]={"username": member.name}
         write_json('user', user_data)
+
 
 @bot.event
 async def on_ready() -> None:
