@@ -6,6 +6,8 @@ import os, json
 from datetime import datetime
 import traceback
 import pytz
+import requests
+import re
 tz_NP = pytz.timezone('Asia/Kathmandu')
 
 
@@ -16,6 +18,7 @@ user_file=basepath+'/data/user.json'
 attendance_file=basepath+'/data/attendance.json'
 
 intents = discord.Intents.default()
+intents.message_content = True
 bot = Bot(command_prefix='/', intents=intents)
 bot.remove_command('help')
 
@@ -81,10 +84,55 @@ async def on_voice_state_update(member, before, after):
             user_data[mem_id]={"username": member.name}
         write_json('user', user_data)
 
+def convert_rust_to_json(rust_data):
+    rust_data = ' '.join(rust_data.split())
+    replacements = [
+        ('Report {', '{'),
+        ('Assignment{', '{'),
+        ('None', 'null'),
+    ]
+    wraps= ['id', 'assignments', 'name','status', 'content', ' NotSubmitted', ' Submitted', 'Late']
+    for old, new in replacements:
+        rust_data = rust_data.replace(old, new)
+    for wrap in wraps:
+        rust_data = rust_data.replace(wrap, f'"{wrap.strip()}"')
+    rust_data = re.sub(r',\s*([}\]])', r'\1', rust_data)    
+    return json.loads(rust_data)
+
+
+async def check_nos_submission(id):
+    r=requests.get("http://172.104.50.136/")
+    reports=convert_rust_to_json(r.text)
+    for r in reports:
+        if r['id']==int(id): return r['assignments']
+    return None
+
+
+@bot.event
+async def on_message(msg):
+    if not msg.content.startswith('230'): return
+    met_id=msg.content.strip().split()[0]
+    try:
+        assignments=await check_nos_submission(met_id)
+    except:
+        return await msg.channel.send("Something went wrong;/ \nPlease Try Again Later!")
+    if not assignments: return await msg.channel.send("Invalid Londot Met ID Provided!")
+    to_send=f"__NOS status for **{met_id}**:__\n"
+    for a in assignments:
+        to_send+=f"{a['name']} --> {a['status']} "
+        if a['status']=='Late':
+            to_send+=":sob:"
+        elif a['status']=='Submitted':
+            to_send+=":white_check_mark:"
+        elif a['status']=='NotSubmitted':
+            to_send+=":x:"
+        to_send+="\n"
+    await msg.channel.send(to_send)
+
 
 @bot.event
 async def on_ready() -> None:
-    await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name="for attendees"))
+    await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name="for NOS submissions and HOH attendees"))
     print(f'Logged in as {bot.user} (ID: {bot.user.id})')
     print('------')
     bot.tree.add_command(enroll)
