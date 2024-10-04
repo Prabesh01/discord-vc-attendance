@@ -112,6 +112,7 @@ async def check_nos_submission(id):
 async def on_message(msg):
     if not msg.content.startswith('230'): return
     met_id=msg.content.strip().split()[0]
+    if not met_id.isdecimal(): return
     try:
         assignments=await check_nos_submission(met_id)
     except:
