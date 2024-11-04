@@ -1,4 +1,3 @@
-
 import discord
 from discord.ext.commands import Bot
 from discord import app_commands
@@ -19,7 +18,8 @@ attendance_file=basepath+'/data/attendance.json'
 
 intents = discord.Intents.default()
 intents.message_content = True
-bot = Bot(command_prefix='/', intents=intents)
+
+bot=Bot(command_prefix='/', intents=intents)
 bot.remove_command('help')
 
 
@@ -43,9 +43,16 @@ async def on_error(event, *args, **kwargs):
     bot.AppInfo = await bot.application_info()
     await bot.AppInfo.owner.send(embed=embed)
 
+@bot.event
+async def on_ready() -> None:
+    await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name="over ICP-BIT server"))
+    print(f'Logged in as {bot.user} (ID: {bot.user.id})')
+    print('------')
+    await bot.tree.sync()
 
-@app_commands.command(name="enroll", description="Provide your details.")
-@app_commands.describe(london_met_id="Your Londeon Met ID", name="Your name")
+
+@bot.tree.command(name="enroll", description="Hour of Hack Registration")
+@app_commands.describe(london_met_id="Your London Met ID", name="Your Name")
 async def enroll(interaction: discord.Interaction, london_met_id: int, name: str):
     user_data=read_json('user')
     data = {
@@ -113,15 +120,6 @@ async def on_message(msg):
             to_send+=":x:"
         to_send+="\n"
     await msg.channel.send(to_send)
-
-
-@bot.event
-async def on_ready() -> None:
-    await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name="for NOS submissions and HOH attendees"))
-    print(f'Logged in as {bot.user} (ID: {bot.user.id})')
-    print('------')
-    bot.tree.add_command(enroll)
-    await bot.tree.sync()
 
 
 bot.run(os.getenv("bot_token"))
