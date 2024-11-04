@@ -65,10 +65,10 @@ async def enroll(interaction: discord.Interaction, london_met_id: int, name: str
 @bot.event
 async def on_voice_state_update(member, before, after):
     now=datetime.now(tz_NP)
-    #if now.weekday() != 3 or now.hour != 15: 
-    #    await member.move_to(None)
-    #    return
-    if after.channel and after.channel.id==1289266957702529118: #1289057002311385118:
+    if now.weekday() != 3 or now.hour != 15: 
+        await member.move_to(None)
+        return
+    if after.channel and after.channel.id==1289057002311385118:
         attendance=read_json('attendance')
         date_now=now.strftime('%Y-%m-%d')
         if date_now not in attendance:
@@ -84,25 +84,9 @@ async def on_voice_state_update(member, before, after):
             user_data[mem_id]={"username": member.name}
         write_json('user', user_data)
 
-def convert_rust_to_json(rust_data):
-    rust_data = ' '.join(rust_data.split())
-    replacements = [
-        ('Report {', '{'),
-        ('Assignment{', '{'),
-        ('None', 'null'),
-    ]
-    wraps= ['id', 'assignments', 'name','status', 'content', ' NotSubmitted', ' Submitted', 'Late']
-    for old, new in replacements:
-        rust_data = rust_data.replace(old, new)
-    for wrap in wraps:
-        rust_data = rust_data.replace(wrap, f'"{wrap.strip()}"')
-    rust_data = re.sub(r',\s*([}\]])', r'\1', rust_data)    
-    return json.loads(rust_data)
-
 
 async def check_nos_submission(id):
-    r=requests.get("http://172.104.50.136/")
-    reports=convert_rust_to_json(r.text)
+    reports=requests.get("http://172.104.50.136:8080").json()
     for r in reports:
         if r['id']==int(id): return r['assignments']
     return None
