@@ -92,16 +92,45 @@ async def on_voice_state_update(member, before, after):
         write_json('user', user_data)
 
 
-async def check_nos_submission(id):
+async def check_nos_submission(id=None):
     reports=requests.get("http://172.104.50.136:8080").json()
+    if not id: return reports
     for r in reports:
         if r['id']==int(id): return r['assignments']
     return None
 
+def status_emoji(s):
+    if s=='Late':
+        return ":sob:"
+    elif s=='Submitted':
+        return ":white_check_mark:"
+    elif s=='NotSubmitted':
+        return ":x:"
+    else:
+        return ":white_small_square:"
 
 @bot.event
 async def on_message(msg):
     if not msg.content.startswith('230'): return
+
+    if msg.content=="230":
+        reports=await check_nos_submission()
+        logs={}
+        for r in reports:
+            for a in r['assignments']:
+                if not a['name'] in logs: logs[a['name']]={}
+                if not a['status'] in logs[a['name']]: logs[a['name']][a['status']]=0
+                logs[a['name']][a['status']]+=1
+        to_send=''
+        for l in logs:
+            to_send+=f"\n__{l}__:\n"
+            i=0
+            for s,v in dict(sorted(logs[l].items(), reverse=True)).items():
+                to_send+=f"{', ' if i else ''}{status_emoji(s)} ({v})"
+                i=1
+        await msg.channel.send(to_send)
+        return
+
     met_id=msg.content.strip().split()[0]
     if not met_id.isdecimal(): return
     try:
@@ -112,12 +141,7 @@ async def on_message(msg):
     to_send=f"__NOS status for **{met_id}**:__\n"
     for a in assignments:
         to_send+=f"{a['name']} --> {a['status']} "
-        if a['status']=='Late':
-            to_send+=":sob:"
-        elif a['status']=='Submitted':
-            to_send+=":white_check_mark:"
-        elif a['status']=='NotSubmitted':
-            to_send+=":x:"
+        to_send+=status_emoji(a['status'])
         to_send+="\n"
     await msg.channel.send(to_send)
 
