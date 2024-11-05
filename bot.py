@@ -83,6 +83,10 @@ async def on_voice_state_update(member, before, after):
         if not str(member.id) in attendance[date_now]:
             attendance[date_now].append(str(member.id))
             write_json('attendance', attendance)
+            try:
+                dm_channel = await member.create_dm()
+                await dm_channel.send("You are marked as present in today's session.")
+            except: pass
         await member.move_to(None)
 
         user_data=read_json('user')
