@@ -7,6 +7,7 @@ import traceback
 import pytz
 import requests
 import re
+from filelock import FileLock
 tz_NP = pytz.timezone('Asia/Kathmandu')
 
 
@@ -24,14 +25,17 @@ bot.remove_command('help')
 
 
 def read_json(fname):
-    with open(basepath+'/data/'+fname+'.json', 'r') as f:
-        return json.load(f)
+    file=basepath+'/data/'+fname+'.json'
+    with FileLock(file + '.lock'):
+        with open(file, 'r') as f:
+            return json.load(f)
 
 
 def write_json(fname, data):
     file=basepath+'/data/'+fname+'.json'
-    with open(file, 'w') as f:
-        json.dump(data, f, indent=4)
+    with FileLock(file + '.lock'):
+        with open(file, 'w') as f:
+            json.dump(data, f, indent=4)
 
 
 @bot.event
