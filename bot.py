@@ -91,8 +91,8 @@ async def on_voice_state_update(member, before, after):
 
         user_data=read_json('user')
         mem_id=str(member.id)
-        if not mem_id in user_data:
-            user_data[mem_id]={"username": member.name}
+        if not mem_id in user_data: user_data[mem_id]={"username": member.name}
+        else: user_data[mem_id]["username"]=member.name
         write_json('user', user_data)
 
 
