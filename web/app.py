@@ -35,7 +35,12 @@ def get_attendance_data():
         attendance_days.append({date:len(attendance_data[date])})
         for user in users_data:
             user_attendace[user]['attendance'].append(1 if user in attendance_data[date] else 0)
-    return user_attendace, attendance_days
+
+    filtered_users = {user: data for user, data in user_attendace.items() if sum(data['attendance']) > 0}
+    sorted_users = sorted(filtered_users.items(), key=lambda item: sum(item[1]['attendance']), reverse=True)
+    sorted_user_attendace = {user: data for user, data in sorted_users}
+
+    return sorted_user_attendace, attendance_days
 
 
 @app.route('/')
