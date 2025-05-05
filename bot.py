@@ -75,11 +75,12 @@ async def enroll(interaction: discord.Interaction, london_met_id: int, name: str
 
 @bot.event
 async def on_voice_state_update(member, before, after):
-    now=datetime.now(tz_NP)
-    if now.weekday() != 3 or now.hour != 15: 
-        await member.move_to(None)
-        return
     if after.channel and after.channel.id==1289057002311385118:
+        now=datetime.now(tz_NP)
+        if now.weekday() != 0 or now.hour != 15:
+            await member.move_to(None)
+            return
+
         attendance=read_json('attendance')
         date_now=now.strftime('%Y-%m-%d')
         if date_now not in attendance:
@@ -98,60 +99,5 @@ async def on_voice_state_update(member, before, after):
         if not mem_id in user_data: user_data[mem_id]={"username": member.name}
         else: user_data[mem_id]["username"]=member.name
         write_json('user', user_data)
-
-
-async def check_nos_submission(id=None):
-    reports=requests.get("http://172.104.50.136:8080").json()
-    if not id: return reports
-    for r in reports:
-        if r['id']==int(id): return r['assignments']
-    return None
-
-def status_emoji(s):
-    if s=='Late':
-        return ":sob:"
-    elif s=='Submitted':
-        return ":white_check_mark:"
-    elif s=='NotSubmitted':
-        return ":x:"
-    else:
-        return ":white_small_square:"
-
-@bot.event
-async def on_message(msg):
-    if not msg.content.startswith('230'): return
-
-    if msg.content=="230":
-        reports=await check_nos_submission()
-        logs={}
-        for r in reports:
-            for a in r['assignments']:
-                if not a['name'] in logs: logs[a['name']]={}
-                if not a['status'] in logs[a['name']]: logs[a['name']][a['status']]=0
-                logs[a['name']][a['status']]+=1
-        to_send=''
-        for l in logs:
-            to_send+=f"\n__{l}__:\n"
-            i=0
-            for s,v in dict(sorted(logs[l].items(), reverse=True)).items():
-                to_send+=f"{', ' if i else ''}{status_emoji(s)} ({v})"
-                i=1
-        await msg.channel.send(to_send)
-        return
-
-    met_id=msg.content.strip().split()[0]
-    if not met_id.isdecimal(): return
-    try:
-        assignments=await check_nos_submission(met_id)
-    except:
-        return await msg.channel.send("Something went wrong;/ \nPlease Try Again Later!")
-    if not assignments: return await msg.channel.send("Invalid Londot Met ID Provided!")
-    to_send=f"__NOS status for **{met_id}**:__\n"
-    for a in assignments:
-        to_send+=f"{a['name']} --> {a['status']} "
-        to_send+=status_emoji(a['status'])
-        to_send+="\n"
-    await msg.channel.send(to_send)
-
 
 bot.run(os.getenv("bot_token"))
